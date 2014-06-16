@@ -1,0 +1,250 @@
+#!/bin/sh
+
+#################################################################################
+# Parameters
+
+MLO=""
+MLO_MS=524288
+
+UBOOT=""
+UBOOT_MS=524288
+
+ENVIRONMENT="no"
+
+KERNEL=""
+KERNEL_MS=12582912
+
+FDT=""
+FDT_MS=524288
+
+ROOTFS=""
+
+ERROR="no"
+DO_SOMETHING="no"
+
+FLASH_MOUNT_POINT="/mnt/flash"
+VOLUME_NAME="rootfs"
+
+#################################################################################
+# Helpers
+
+print_usage () {
+cat<<EOF
+
+ This script is an utility that helps you configure the content of your Pengwyn
+ board NAND flash memory. The script will erase and write only the memory areas
+ associated  to  specific  portions  of  the  system you want to write to. This
+ script has no mandatory option.
+
+ Usage: $1 [OPTIONS]
+
+ OPTIONS:
+ -h                 Print this help and exit.
+ -m <filepath>      MLO file.
+ -u <filepath>      u-boot.img file.
+ -e                 Clean u-boot environment variables.
+ -k <filepath>      zImage file.
+ -d <filepath>      pengwyn.dtb file.
+ -r <filepath>      rootfs.tar.gz file.
+
+EOF
+}
+
+file_size_error () {
+    local FILE_NAME
+    local FILE_SIZE
+    local MAXIMUM_FILE_SIZE
+    FILE_NAME=$1
+    FILE_SIZE=$2
+    MAXIMUM_FILE_SIZE=$3
+    echo " File ${FILE_NAME} does not fit the memory."
+    echo "     Actual size:  ${FILE_SIZE} Bytes."
+    echo "     Maximum size: ${MAXIMUM_FILE_SIZE} Bytes."
+}
+
+check_file () {
+    local FILE_NAME
+    local FILE_SIZE
+    local MAXIMUM_FILE_SIZE
+    FILE_NAME=$1
+    MAXIMUM_FILE_SIZE=$2
+    if [ -n "${FILE_NAME}" ]
+    then
+        DO_SOMETHING="yes"
+        if [ ! -f ${FILE_NAME} ]
+        then
+            echo " File ${FILE_NAME} does not exist."
+            ERROR="yes"
+        else
+            FILE_SIZE=`wc -c ${FILE_NAME} | awk -F" " '{print $1}'`
+            if [ ${FILE_SIZE} -eq 0 ]
+            then
+                echo " File ${FILE_NAME} is empty."
+                ERROR="yes"
+            elif [ ${FILE_SIZE} -gt ${MAXIMUM_FILE_SIZE} ]
+            then
+                file_size_error ${FILE_NAME} ${FILE_SIZE} ${MAXIMUM_FILE_SIZE}
+                ERROR="yes"
+            fi
+        fi
+    fi
+}
+
+#################################################################################
+# Options parser
+
+while getopts "hm:u:ek:d:r:" option
+do
+    case ${option} in
+        h)
+            print_usage $0
+            exit 0
+            ;;
+        m)
+            MLO=${OPTARG}
+            ;;
+        u)
+            UBOOT=${OPTARG}
+            ;;
+        e)
+            ENVIRONMENT="yes"
+            ;;
+        k)
+            KERNEL=${OPTARG}
+            ;;
+        d)
+            FDT=${OPTARG}
+            ;;
+        r)
+            ROOTFS=${OPTARG}
+            ;;
+        ?)
+            print_usage $0
+            exit 1
+            ;;
+    esac
+done
+
+#################################################################################
+# Sanity checks
+
+check_file "${MLO}"    "${MLO_MS}"
+check_file "${UBOOT}"  "${UBOOT_MS}"
+check_file "${KERNEL}" "${KERNEL_MS}"
+check_file "${FDT}"    "${FDT_MS}"
+
+if [ -n "${ROOTFS}" ]
+then
+    DO_SOMETHING="yes"
+    if [ ! -f ${ROOTFS} ]
+    then
+        echo " File ${ROOTFS} does not exist."
+        ERROR="yes"
+    else
+        tar -tzf ${ROOTFS} >/dev/null 2>&1
+        if [ $? -ne 0 ]
+        then
+            echo " File ${ROOTFS} is not a valid .tar.gz file."
+            ERROR="yes"
+        fi
+    fi
+fi
+
+if [ "${ERROR}" == "yes" ]
+then
+    echo " Aborting."
+    exit 1
+fi
+
+if [ "${DO_SOMETHING}" == "no" ]
+then
+    echo " Nothing to do."
+    exit 0
+fi
+
+#################################################################################
+# Main
+
+set -e
+
+if [ -n "${MLO}" ]
+then
+    echo " *** MLO ***"
+
+    echo "     Cleaning MLO memory..."
+    flash_erase /dev/mtd0 0 0 > /dev/null
+    flash_erase /dev/mtd1 0 0 > /dev/null
+    flash_erase /dev/mtd2 0 0 > /dev/null
+    flash_erase /dev/mtd3 0 0 > /dev/null
+
+    echo "     Writing MLO (${MLO}) to memory..."
+    nandwrite --pad /dev/mtd0 "${MLO}" > /dev/null
+    nandwrite --pad /dev/mtd1 "${MLO}" > /dev/null
+    nandwrite --pad /dev/mtd2 "${MLO}" > /dev/null
+    nandwrite --pad /dev/mtd3 "${MLO}" > /dev/null
+fi
+
+if [ -n "${FDT}" ]
+then
+    echo " *** Flattened Device Tree ***"
+
+    echo "     Cleaning FDT NAND memory..."
+    flash_erase /dev/mtd4 0 0 > /dev/null
+
+    echo "     Writing FDT (${FDT}) to NAND..."
+    nandwrite --pad /dev/mtd4 "${FDT}" > /dev/null
+fi
+
+if [ -n "${UBOOT}" ]
+then
+    echo " *** U-Boot ***"
+
+    echo "     Cleaning U-Boot NAND memory..."
+    flash_erase /dev/mtd5 0 0 > /dev/null
+
+    echo "     Writing U-Boot (${UBOOT}) to NAND..."
+    nandwrite --pad /dev/mtd5 "${UBOOT}" > /dev/null
+fi
+
+if [ "${ENVIRONMENT}" == "yes" ]
+then
+    echo " *** U-Boot environment ***"
+
+    echo "     Cleaning U-Boot environment in NAND..."
+    flash_erase /dev/mtd6 0 0 > /dev/null
+    flash_erase /dev/mtd7 0 0 > /dev/null
+fi
+
+if [ -n "${KERNEL}" ]
+then
+    echo " *** Linux Kernel ***"
+    echo "     Cleaning Linux Kernel NAND memory..."
+    flash_erase /dev/mtd8 0 0 > /dev/null
+
+    echo "     Writing Linux Kernel (${KERNEL}) to NAND..."
+    nandwrite --pad /dev/mtd8 "${KERNEL}" > /dev/null
+fi
+
+if [ -n "${ROOTFS}" ]
+then
+    echo " *** Root file system ***"
+    echo "     Cleaning root file system NAND memory..."
+    flash_erase /dev/mtd9 0 0 > /dev/null
+
+    echo "     Formatting NAND partition..."
+    ubiformat /dev/mtd9 > /dev/null
+
+    echo "     Mounting UBI partition to ${FLASH_MOUNT_POINT}..."
+    ubiattach -p /dev/mtd9 > /dev/null
+    ubimkvol -N ${VOLUME_NAME} -m /dev/ubi0 > /dev/null
+    mkdir -p ${FLASH_MOUNT_POINT}
+    mount -t ubifs ubi0:${VOLUME_NAME} ${FLASH_MOUNT_POINT} > /dev/null
+
+    echo "     Copying the root file system (${ROOTFS}) to ${FLASH_MOUNT_POINT}..."
+    tar -C ${FLASH_MOUNT_POINT} -xzf "${ROOTFS}" > /dev/null
+    sync
+    umount ${FLASH_MOUNT_POINT} > /dev/null
+    ubidetach -p /dev/mtd9 > /dev/null
+fi
+
+exit 0

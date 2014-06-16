@@ -1,0 +1,16 @@
+OpenEmbedded/Yocto BSP layer for ArchiTech's Pengwyn board
+==========================================================
+
+This layer provides support for ArchiTech's Pengwyn for
+use with OpenEmbedded and/or Yocto.
+
+This layer depends on:
+
+URI: git://git.openembedded.org/openembedded-core.git
+branch: dora
+
+URI: git://git.openembedded.org/meta-openembedded.git
+branch: dora
+
+URI: git://git.yoctoproject.org/meta-ti.git
+branch: dora
