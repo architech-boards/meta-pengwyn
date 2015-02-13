@@ -1,0 +1,620 @@
+diff -Naur a/arch/arm/boot/dts/pengwyn-common.dtsi b/arch/arm/boot/dts/pengwyn-common.dtsi
+--- a/arch/arm/boot/dts/pengwyn-common.dtsi	1970-01-01 01:00:00.000000000 +0100
++++ b/arch/arm/boot/dts/pengwyn-common.dtsi	2014-06-12 16:52:28.181693688 +0200
+@@ -0,0 +1,349 @@
++/*
++ * Copyright (C) 2014 Avnet EMG
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++/ {
++    model                           = "Architech Pengwyn board";
++    compatible                      = "architech,pengwyn", "ti,am33xx";
++
++    cpus {
++        cpu@0 {
++            cpu0-supply             = <&vmpu_fixed>;
++        };
++    }; /* cpu */
++
++    memory {
++        device_type                 = "memory";
++        reg                         = <0x80000000 0x10000000>; /* 256 MB */
++    }; /* memory */
++
++    vmpu_fixed: fixedregulator@0 {
++        compatible                  = "regulator-fixed";
++        regulator-name              = "vdd_mpu";
++        regulator-min-microvolt     = <1100000>;
++        regulator-max-microvolt     = <1100000>;
++    }; /* vmpu_fixed */
++
++    vmmcsd_fixed: fixedregulator@1 {
++        compatible                  = "regulator-fixed";
++        regulator-name              = "vmmcsd_fixed";
++        regulator-min-microvolt     = <3300000>;
++        regulator-max-microvolt     = <3300000>;
++    }; /* vmmcsd_fixed */
++
++    am33xx_pinmux: pinmux@44e10800 {
++
++        uart0_pins: pinmux_uart0_pins {
++            pinctrl-single,pins     = <
++                0x170 (PIN_INPUT_PULLUP    | MUX_MODE0) /* uart0_rxd.uart0_rxd */
++                0x174 (PIN_OUTPUT_PULLDOWN | MUX_MODE0) /* uart0_txd.uart0_txd */
++            >;
++        }; /* uart0_pins */
++
++        mmc1_pins_default: pinmux_mmc1_pins {
++            pinctrl-single,pins     = <
++                0x0F0 (PIN_INPUT_PULLUP | MUX_MODE0)    /* mmc0_dat3.mmc0_dat3   - DAT3 */
++                0x0F4 (PIN_INPUT_PULLUP | MUX_MODE0)    /* mmc0_dat2.mmc0_dat2   - DAT2 */
++                0x0F8 (PIN_INPUT_PULLUP | MUX_MODE0)    /* mmc0_dat1.mmc0_dat1   - DAT1 */
++                0x0FC (PIN_INPUT_PULLUP | MUX_MODE0)    /* mmc0_dat0.mmc0_dat0   - DAT0 */
++                0x100 (PIN_INPUT_PULLUP | MUX_MODE0)    /* mmc0_clk.mmc0_clk     - CLK  */
++                0x104 (PIN_INPUT_PULLUP | MUX_MODE0)    /* mmc0_cmd.mmc0_cmd     - CMD  */
++                0x190 (PIN_INPUT_PULLUP | MUX_MODE7)    /* mcasp0_aclkx.gpio3_14 - CD   */
++                0x1A0 (PIN_INPUT_PULLUP | MUX_MODE7)    /* mcasp0_aclkr.gpio3_18 - WP   */
++            >;
++        }; /* mmc1_pins_default */
++
++        mmc1_pins_sleep: pinmux_mmc1_pins_sleep {
++            pinctrl-single,pins     = <
++                0x0F0 (PIN_INPUT_PULLDOWN | MUX_MODE7)
++                0x0F4 (PIN_INPUT_PULLDOWN | MUX_MODE7)
++                0x0F8 (PIN_INPUT_PULLDOWN | MUX_MODE7)
++                0x0FC (PIN_INPUT_PULLDOWN | MUX_MODE7)
++                0x100 (PIN_INPUT_PULLDOWN | MUX_MODE7)
++                0x104 (PIN_INPUT_PULLDOWN | MUX_MODE7)
++                0x190 (PIN_INPUT_PULLDOWN | MUX_MODE7)
++                0x1A0 (PIN_INPUT_PULLDOWN | MUX_MODE7)
++            >;
++        }; /* mmc1_pins_sleep */
++
++        cpsw_default: cpsw_default {
++            pinctrl-single,pins     = <
++                /* Slave 1 */
++                0x110 (PIN_INPUT_PULLUP    | MUX_MODE0) /* mii1_rxerr.mii1_rxerr */
++                0x114 (PIN_OUTPUT_PULLDOWN | MUX_MODE0) /* mii1_txen.mii1_txen   */
++                0x118 (PIN_INPUT_PULLUP    | MUX_MODE0) /* mii1_rxdv.mii1_rxdv   */
++                0x11c (PIN_OUTPUT_PULLDOWN | MUX_MODE0) /* mii1_txd3.mii1_txd3   */
++                0x120 (PIN_OUTPUT_PULLDOWN | MUX_MODE0) /* mii1_txd2.mii1_txd2   */
++                0x124 (PIN_OUTPUT_PULLDOWN | MUX_MODE0) /* mii1_txd1.mii1_txd1   */
++                0x128 (PIN_OUTPUT_PULLDOWN | MUX_MODE0) /* mii1_txd0.mii1_txd0   */
++                0x12c (PIN_INPUT_PULLUP    | MUX_MODE0) /* mii1_txclk.mii1_txclk */
++                0x130 (PIN_INPUT_PULLUP    | MUX_MODE0) /* mii1_rxclk.mii1_rxclk */
++                0x134 (PIN_INPUT_PULLUP    | MUX_MODE0) /* mii1_rxd3.mii1_rxd3   */
++                0x138 (PIN_INPUT_PULLUP    | MUX_MODE0) /* mii1_rxd2.mii1_rxd2   */
++                0x13c (PIN_INPUT_PULLUP    | MUX_MODE0) /* mii1_rxd1.mii1_rxd1   */
++                0x140 (PIN_INPUT_PULLUP    | MUX_MODE0) /* mii1_rxd0.mii1_rxd0   */
++            >;
++        }; /* cpsw_default */
++
++        cpsw_sleep: cpsw_sleep {
++            pinctrl-single,pins     = <
++                /* Slave 1 reset value */
++                0x110 (PIN_INPUT_PULLDOWN | MUX_MODE7)
++                0x114 (PIN_INPUT_PULLDOWN | MUX_MODE7)
++                0x118 (PIN_INPUT_PULLDOWN | MUX_MODE7)
++                0x11c (PIN_INPUT_PULLDOWN | MUX_MODE7)
++                0x120 (PIN_INPUT_PULLDOWN | MUX_MODE7)
++                0x124 (PIN_INPUT_PULLDOWN | MUX_MODE7)
++                0x128 (PIN_INPUT_PULLDOWN | MUX_MODE7)
++                0x12c (PIN_INPUT_PULLDOWN | MUX_MODE7)
++                0x130 (PIN_INPUT_PULLDOWN | MUX_MODE7)
++                0x134 (PIN_INPUT_PULLDOWN | MUX_MODE7)
++                0x138 (PIN_INPUT_PULLDOWN | MUX_MODE7)
++                0x13c (PIN_INPUT_PULLDOWN | MUX_MODE7)
++                0x140 (PIN_INPUT_PULLDOWN | MUX_MODE7)
++            >;
++        }; /* cpsw_sleep */
++
++        mdio_default: mdio_default {
++            pinctrl-single,pins     = <
++                /* MDIO */
++                0x148 (PIN_INPUT_PULLUP  | SLEWCTRL_FAST | MUX_MODE0) /* mdio_data.mdio_data */
++                0x14c (PIN_OUTPUT_PULLUP | MUX_MODE0)                 /* mdio_clk.mdio_clk   */
++            >;
++        }; /* mdio_default */
++
++        mdio_sleep: mdio_sleep {
++            pinctrl-single,pins     = <
++                /* MDIO reset value */
++                0x148 (PIN_INPUT_PULLDOWN | MUX_MODE7)
++                0x14c (PIN_INPUT_PULLDOWN | MUX_MODE7)
++            >;
++        }; /* mdio_sleep */
++
++        i2c0_pins: pinmux_i2c0_pins {
++            pinctrl-single,pins     = <
++                0x188 (PIN_INPUT_PULLUP | MUX_MODE0)    /* i2c0_sda.i2c0_sda */
++                0x18c (PIN_INPUT_PULLUP | MUX_MODE0)    /* i2c0_scl.i2c0_scl */
++            >;
++        }; /* i2c0_pins */
++
++        nandflash_pins_default: nandflash_pins_default {
++            pinctrl-single,pins     = <
++                0x00 (PIN_INPUT_PULLUP  | MUX_MODE0) /* gpmc_ad0.gpmc_ad0           */
++                0x04 (PIN_INPUT_PULLUP  | MUX_MODE0) /* gpmc_ad1.gpmc_ad1           */
++                0x08 (PIN_INPUT_PULLUP  | MUX_MODE0) /* gpmc_ad2.gpmc_ad2           */
++                0x0c (PIN_INPUT_PULLUP  | MUX_MODE0) /* gpmc_ad3.gpmc_ad3           */
++                0x10 (PIN_INPUT_PULLUP  | MUX_MODE0) /* gpmc_ad4.gpmc_ad4           */
++                0x14 (PIN_INPUT_PULLUP  | MUX_MODE0) /* gpmc_ad5.gpmc_ad5           */
++                0x18 (PIN_INPUT_PULLUP  | MUX_MODE0) /* gpmc_ad6.gpmc_ad6           */
++                0x1c (PIN_INPUT_PULLUP  | MUX_MODE0) /* gpmc_ad7.gpmc_ad7           */
++                0x70 (PIN_INPUT_PULLUP  | MUX_MODE0) /* gpmc_wait0.gpmc_wait0       */
++                0x74 (PIN_OUTPUT        | MUX_MODE0) /* gpmc_wpn.gpmc_wpn           */
++                0x7c (PIN_OUTPUT        | MUX_MODE0) /* gpmc_csn0.gpmc_csn0         */
++                0x90 (PIN_OUTPUT        | MUX_MODE0) /* gpmc_advn_ale.gpmc_advn_ale */
++                0x94 (PIN_OUTPUT        | MUX_MODE0) /* gpmc_oen_ren.gpmc_oen_ren   */
++                0x98 (PIN_OUTPUT        | MUX_MODE0) /* gpmc_wen.gpmc_wen           */
++                0x9c (PIN_OUTPUT        | MUX_MODE0) /* gpmc_be0n_cle.gpmc_be0n_cle */
++            >;
++        }; /* nandflash_pins_default */
++
++        nandflash_pins_sleep: nandflash_pins_sleep {
++            pinctrl-single,pins     = <
++                0x00 (PIN_INPUT_PULLDOWN | MUX_MODE7)
++                0x04 (PIN_INPUT_PULLDOWN | MUX_MODE7)
++                0x08 (PIN_INPUT_PULLDOWN | MUX_MODE7)
++                0x0c (PIN_INPUT_PULLDOWN | MUX_MODE7)
++                0x10 (PIN_INPUT_PULLDOWN | MUX_MODE7)
++                0x14 (PIN_INPUT_PULLDOWN | MUX_MODE7)
++                0x18 (PIN_INPUT_PULLDOWN | MUX_MODE7)
++                0x1c (PIN_INPUT_PULLDOWN | MUX_MODE7)
++                0x70 (PIN_INPUT_PULLDOWN | MUX_MODE7)
++                0x74 (PIN_INPUT_PULLDOWN | MUX_MODE7)
++                0x7c (PIN_INPUT_PULLDOWN | MUX_MODE7)
++                0x90 (PIN_INPUT_PULLDOWN | MUX_MODE7)
++                0x94 (PIN_INPUT_PULLDOWN | MUX_MODE7)
++                0x98 (PIN_INPUT_PULLDOWN | MUX_MODE7)
++                0x9c (PIN_INPUT_PULLDOWN | MUX_MODE7)
++            >;
++        }; /* nandflash_pins_sleep */
++    }; /* am33xx_pinmux */
++
++    ocp {
++        uart0: serial@44e09000 {
++            pinctrl-names           = "default";
++            pinctrl-0               = <&uart0_pins>;
++            status                  = "okay";
++        }; /* uart0 */
++
++        i2c0: i2c@44e0b000 {
++            pinctrl-names           = "default";
++            pinctrl-0               = <&i2c0_pins>;
++            status                  = "okay";
++            clock-frequency         = <100000>;
++        }; /* i2c0 */
++
++        musb: usb@47400000 {
++            status                  = "okay";
++
++            control@44e10000 {
++                status              = "okay";
++            };
++
++            usb-phy@47401300 {
++                status              = "okay";
++            };
++
++            usb-phy@47401b00 {
++                status              = "okay";
++            };
++
++            usb@47401000 {
++                status              = "okay";
++                dr_mode             = "otg";
++            };
++
++            usb@47401800 {
++                status              = "okay";
++                dr_mode             = "host";
++            };
++
++            dma-controller@07402000  {
++                status              = "okay";
++            };
++        }; /* musb */
++    }; /* ocp */
++
++    leds: gpio-leds {
++        compatible                  = "gpio-leds";
++
++        status {
++            label                   = "pengwyn::heartbeat";
++            gpios                   = <&gpio0 6 GPIO_ACTIVE_LOW>;
++            linux,default-trigger   = "heartbeat";           
++        }; /* status */
++    }; /* leds */
++}; /* / */
++
++&cpsw_emac0 {
++    phy_id                          = <&davinci_mdio>, <1>;
++    phy-mode                        = "mii";
++}; /* cpsw_emac0 */
++
++&mac {
++    slaves                          = <1>;
++    active_slave                    = <0>;
++    pinctrl-names                   = "default", "sleep";
++    pinctrl-0                       = <&cpsw_default>;
++    pinctrl-1                       = <&cpsw_sleep>;
++}; /* mac */
++
++&davinci_mdio {
++    pinctrl-names                   = "default", "sleep";
++    pinctrl-0                       = <&mdio_default>;
++    pinctrl-1                       = <&mdio_sleep>;
++}; /* davinci_mdio */
++
++&mmc1 {
++    status                          = "okay";
++    bus-width                       = <4>;
++    vmmc-supply                     = <&vmmcsd_fixed>;
++    pinctrl-names                   = "default","sleep";
++    pinctrl-0                       = <&mmc1_pins_default>;
++    pinctrl-1                       = <&mmc1_pins_sleep>;
++    cd-gpios                        = <&gpio3 14 GPIO_ACTIVE_HIGH>;
++    wp-gpios                        = <&gpio3 18 GPIO_ACTIVE_HIGH>;
++}; /* mmc1 */
++
++&elm {
++    status                          = "okay";
++}; /* elm */
++
++&gpmc {
++    status                          = "okay";
++    pinctrl-names                   = "default", "sleep";
++    pinctrl-0                       = <&nandflash_pins_default>;
++    pinctrl-1                       = <&nandflash_pins_sleep>;
++    ranges                          = <0 0 0x08000000 0x40000000>;  /* CS0, NAND, 1GB */
++
++    nand@0,0 {
++        reg                         = <0 0 0>;                      /* CS0, offset 0  */
++        nand-bus-width              = <8>;
++        gpmc,device-width           = <1>;
++        gpmc,sync-clk-ps            = <0>;
++        gpmc,cs-on-ns               = <0>;
++        gpmc,cs-rd-off-ns           = <44>;
++        gpmc,cs-wr-off-ns           = <44>;
++        gpmc,adv-on-ns              = <6>;
++        gpmc,adv-rd-off-ns          = <34>;
++        gpmc,adv-wr-off-ns          = <44>;
++        gpmc,we-on-ns               = <0>;
++        gpmc,we-off-ns              = <40>;
++        gpmc,oe-on-ns               = <0>;
++        gpmc,oe-off-ns              = <54>;
++        gpmc,access-ns              = <64>;
++        gpmc,rd-cycle-ns            = <82>;
++        gpmc,wr-cycle-ns            = <82>;
++        gpmc,wait-on-read           = "true";
++        gpmc,wait-on-write          = "true";
++        gpmc,bus-turnaround-ns      = <0>;
++        gpmc,cycle2cycle-delay-ns   = <0>;
++        gpmc,clk-activation-ns      = <0>;
++        gpmc,wait-monitoring-ns     = <0>;
++        gpmc,wr-access-ns           = <40>;
++        gpmc,wr-data-mux-bus-ns     = <0>;
++        ti,nand-ecc-opt             = "bch16";
++        ti,elm-id                   = <&elm>;
++        #address-cells              = <1>;
++        #size-cells                 = <1>;
++
++        /* MTD partition table */
++        /* All SPL-* partitions are sized to minimal length
++         * which can be independently programmable. For
++         * NAND flash this is equal to size of erase-block
++         */
++        partition@0 {
++            label                   = "NAND.SPL";
++            reg                     = <0x00000000 0x00080000>;
++        };
++        partition@1 {
++            label                   = "NAND.SPL.backup1";
++            reg                     = <0x00080000 0x00080000>;
++        };
++        partition@2 {
++            label                   = "NAND.SPL.backup2";
++            reg                     = <0x00100000 0x00080000>;
++        };
++        partition@3 {
++            label                   = "NAND.SPL.backup3";
++            reg                     = <0x00180000 0x00080000>;
++        };
++        partition@4 {
++            label                   = "NAND.u-boot-spl-os";
++            reg                     = <0x00200000 0x00080000>;
++        };
++        partition@5 {
++            label                   = "NAND.u-boot";
++            reg                     = <0x00280000 0x00180000>;
++        };
++        partition@6 {
++            label                   = "NAND.u-boot-env";
++            reg                     = <0x00400000 0x00080000>;
++        };
++        partition@7 {
++            label                   = "NAND.u-boot-env.backup1";
++            reg                     = <0x00480000 0x00080000>;
++        };
++        partition@8 {
++            label                   = "NAND.kernel";
++            reg                     = <0x00500000 0x00C00000>;
++        };
++        partition@9 {
++            label                   = "NAND.file-system";
++            reg                     = <0x01100000 0x3EF00000>;
++        };
++    }; /* NAND@0,0 */
++}; /* gpmc */
+diff -Naur a/arch/arm/boot/dts/pengwyn-dvi.dts b/arch/arm/boot/dts/pengwyn-dvi.dts
+--- a/arch/arm/boot/dts/pengwyn-dvi.dts	1970-01-01 01:00:00.000000000 +0100
++++ b/arch/arm/boot/dts/pengwyn-dvi.dts	2014-06-12 16:52:28.213693286 +0200
+@@ -0,0 +1,131 @@
++/*
++ * Copyright (C) 2014 Avnet EMG
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++/dts-v1/;
++
++#include "am33xx.dtsi"
++#include "pengwyn-common.dtsi"
++
++/ {
++    panel {
++        compatible                  = "ti,tilcdc,panel";
++        status                      = "okay";
++        pinctrl-names               = "default";
++        pinctrl-0                   = <&lcd_pins_default>;
++
++        panel-info {
++            ac-bias                 = <255>;
++            ac-bias-intrpt          = <0>;
++            dma-burst-sz            = <16>;
++            bpp                     = <16>;
++            fdd                     = <0x80>;
++            sync-edge               = <0>;
++            sync-ctrl               = <1>;
++            raster-order            = <0>;
++            fifo-th                 = <0>;
++        }; /* panel-info */
++
++        display-timings {
++            native-mode             = <&timing1>;
++
++            timing0: 1360x768_DVI {
++                clock-frequency     = <85500000>;
++                hactive             = <1360>;
++                vactive             = <768>;
++                hfront-porch        = <256>;
++                hback-porch         = <58>;
++                hsync-len           = <18>;
++                vback-porch         = <112>;
++                vfront-porch        = <1>;
++                vsync-len           = <3>;
++            }; /* 1360x768_DVI */
++
++            timing1: 800x600_DVI {
++                clock-frequency     = <33000000>;
++                hactive             = <800>;
++                vactive             = <600>;
++                hfront-porch        = <39>;
++                hback-porch         = <39>;
++                hsync-len           = <47>;
++                vback-porch         = <29>;
++                vfront-porch        = <13>;
++                vsync-len           = <2>;
++            }; /* 800x600_DVI */
++
++            timing2: 800x480_DVI {
++                clock-frequency     = <30000000>;
++                hactive             = <800>;
++                vactive             = <480>;
++                hfront-porch        = <39>;
++                hback-porch         = <39>;
++                hsync-len           = <47>;
++                vback-porch         = <29>;
++                vfront-porch        = <13>;
++                vsync-len           = <2>;
++            }; /* 800x480_DVI */
++        }; /* display-timings */
++    }; /* panel */
++}; /* / */
++
++&am33xx_pinmux {
++    lcd_pins_default: lcd_pins_default {
++        pinctrl-single,pins         = <
++            0x0A0 (PIN_OUTPUT | MUX_MODE0)  /* lcd_data0.lcd_data0           */
++            0x0A4 (PIN_OUTPUT | MUX_MODE0)  /* lcd_data1.lcd_data1           */
++            0x0A8 (PIN_OUTPUT | MUX_MODE0)  /* lcd_data2.lcd_data2           */
++            0x0AC (PIN_OUTPUT | MUX_MODE0)  /* lcd_data3.lcd_data3           */  
++            0x0B0 (PIN_OUTPUT | MUX_MODE0)  /* lcd_data4.lcd_data4           */
++            0x0B4 (PIN_OUTPUT | MUX_MODE0)  /* lcd_data5.lcd_data5           */
++            0x0B8 (PIN_OUTPUT | MUX_MODE0)  /* lcd_data6.lcd_data6           */
++            0x0BC (PIN_OUTPUT | MUX_MODE0)  /* lcd_data7.lcd_data7           */
++            0x0C0 (PIN_OUTPUT | MUX_MODE0)  /* lcd_data8.lcd_data8           */
++            0x0C4 (PIN_OUTPUT | MUX_MODE0)  /* lcd_data9.lcd_data9           */
++            0x0C8 (PIN_OUTPUT | MUX_MODE0)  /* lcd_data10.lcd_data10         */
++            0x0CC (PIN_OUTPUT | MUX_MODE0)  /* lcd_data11.lcd_data11         */
++            0x0D0 (PIN_OUTPUT | MUX_MODE0)  /* lcd_data12.lcd_data12         */
++            0x0D4 (PIN_OUTPUT | MUX_MODE0)  /* lcd_data13.lcd_data13         */
++            0x0D8 (PIN_OUTPUT | MUX_MODE0)  /* lcd_data14.lcd_data14         */
++            0x0DC (PIN_OUTPUT | MUX_MODE0)  /* lcd_data15.lcd_data15         */
++            0x0E8 (PIN_OUTPUT | MUX_MODE0)  /* lcd_pclk.lcd_pclk             */
++            0x0EC (PIN_OUTPUT | MUX_MODE0)  /* lcd_ac_bias_en.lcd_ac_bias_en */
++            0x0E4 (PIN_OUTPUT | MUX_MODE0)  /* lcd_hsync.lcd_hsync           */
++            0x0E0 (PIN_OUTPUT | MUX_MODE0)  /* lcd_vsync.lcd_vsync           */
++        >;
++    }; /* lcd_pins_default */
++
++    lcd_pins_sleep: lcd_pins_sleep {
++        pinctrl-single,pins         = <
++            0x0A0 (PIN_INPUT_PULLDOWN | MUX_MODE7)  /* lcd_data0.lcd_data0           */
++            0x0A4 (PIN_INPUT_PULLDOWN | MUX_MODE7)  /* lcd_data1.lcd_data1           */
++            0x0A8 (PIN_INPUT_PULLDOWN | MUX_MODE7)  /* lcd_data2.lcd_data2           */
++            0x0AC (PIN_INPUT_PULLDOWN | MUX_MODE7)  /* lcd_data3.lcd_data3           */  
++            0x0B0 (PIN_INPUT_PULLDOWN | MUX_MODE7)  /* lcd_data4.lcd_data4           */
++            0x0B4 (PIN_INPUT_PULLDOWN | MUX_MODE7)  /* lcd_data5.lcd_data5           */
++            0x0B8 (PIN_INPUT_PULLDOWN | MUX_MODE7)  /* lcd_data6.lcd_data6           */
++            0x0BC (PIN_INPUT_PULLDOWN | MUX_MODE7)  /* lcd_data7.lcd_data7           */
++            0x0C0 (PIN_INPUT_PULLDOWN | MUX_MODE7)  /* lcd_data8.lcd_data8           */
++            0x0C4 (PIN_INPUT_PULLDOWN | MUX_MODE7)  /* lcd_data9.lcd_data9           */
++            0x0C8 (PIN_INPUT_PULLDOWN | MUX_MODE7)  /* lcd_data10.lcd_data10         */
++            0x0CC (PIN_INPUT_PULLDOWN | MUX_MODE7)  /* lcd_data11.lcd_data11         */
++            0x0D0 (PIN_INPUT_PULLDOWN | MUX_MODE7)  /* lcd_data12.lcd_data12         */
++            0x0D4 (PIN_INPUT_PULLDOWN | MUX_MODE7)  /* lcd_data13.lcd_data13         */
++            0x0D8 (PIN_INPUT_PULLDOWN | MUX_MODE7)  /* lcd_data14.lcd_data14         */
++            0x0DC (PIN_INPUT_PULLDOWN | MUX_MODE7)  /* lcd_data15.lcd_data15         */
++            0x0E8 (PIN_INPUT_PULLDOWN | MUX_MODE7)  /* lcd_pclk.lcd_pclk             */
++            0x0EC (PIN_INPUT_PULLDOWN | MUX_MODE7)  /* lcd_ac_bias_en.lcd_ac_bias_en */
++            0x0E4 (PIN_INPUT_PULLDOWN | MUX_MODE7)  /* lcd_hsync.lcd_hsync           */
++            0x0E0 (PIN_INPUT_PULLDOWN | MUX_MODE7)  /* lcd_vsync.lcd_vsync           */
++        >;
++    }; /* lcd_pins_sleep */
++}; /* am33xx_pinmux */
++
++&lcdc {     
++    pinctrl-names                   = "default", "sleep";
++    pinctrl-0                       = <&lcd_pins_default>;
++    pinctrl-1                       = <&lcd_pins_sleep>;
++    status                          = "okay";
++}; /* lcdc */
+diff -Naur a/arch/arm/boot/dts/pengwyn-touch.dts b/arch/arm/boot/dts/pengwyn-touch.dts
+--- a/arch/arm/boot/dts/pengwyn-touch.dts	1970-01-01 01:00:00.000000000 +0100
++++ b/arch/arm/boot/dts/pengwyn-touch.dts	2014-06-12 16:52:28.221693186 +0200
+@@ -0,0 +1,127 @@
++/*
++ * Copyright (C) 2014 Avnet EMG
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++/dts-v1/;
++
++#include "am33xx.dtsi"
++#include "pengwyn-common.dtsi"
++
++/ {
++    panel {
++        compatible                  = "ti,tilcdc,panel";
++        status                      = "okay";
++        pinctrl-names               = "default";
++        pinctrl-0                   = <&lcd_pins_default>;
++
++        panel-info {
++            ac-bias                 = <255>;
++            ac-bias-intrpt          = <0>;
++            dma-burst-sz            = <16>;
++            bpp                     = <16>;
++            fdd                     = <0x80>;
++            sync-edge               = <0>;
++            sync-ctrl               = <1>;
++            raster-order            = <0>;
++            fifo-th                 = <0>;
++        }; /* panel-info */
++
++        display-timings {
++            480x272_Pengwyn {
++                clock-frequency     = <9000000>;
++                hactive             = <480>;
++                vactive             = <272>;
++                hfront-porch        = <8>;
++                hback-porch         = <43>;
++                hsync-len           = <4>;
++                vback-porch         = <12>;
++                vfront-porch        = <4>;
++                vsync-len           = <10>;
++            };
++        }; /* display-timings */
++    }; /* panel */
++}; /* / */
++
++&am33xx_pinmux {
++    lcd_pins_default: lcd_pins_default {
++        pinctrl-single,pins         = <
++            0x0A0 (PIN_OUTPUT | MUX_MODE0)  /* lcd_data0.lcd_data0           */
++            0x0A4 (PIN_OUTPUT | MUX_MODE0)  /* lcd_data1.lcd_data1           */
++            0x0A8 (PIN_OUTPUT | MUX_MODE0)  /* lcd_data2.lcd_data2           */
++            0x0AC (PIN_OUTPUT | MUX_MODE0)  /* lcd_data3.lcd_data3           */  
++            0x0B0 (PIN_OUTPUT | MUX_MODE0)  /* lcd_data4.lcd_data4           */
++            0x0B4 (PIN_OUTPUT | MUX_MODE0)  /* lcd_data5.lcd_data5           */
++            0x0B8 (PIN_OUTPUT | MUX_MODE0)  /* lcd_data6.lcd_data6           */
++            0x0BC (PIN_OUTPUT | MUX_MODE0)  /* lcd_data7.lcd_data7           */
++            0x0C0 (PIN_OUTPUT | MUX_MODE0)  /* lcd_data8.lcd_data8           */
++            0x0C4 (PIN_OUTPUT | MUX_MODE0)  /* lcd_data9.lcd_data9           */
++            0x0C8 (PIN_OUTPUT | MUX_MODE0)  /* lcd_data10.lcd_data10         */
++            0x0CC (PIN_OUTPUT | MUX_MODE0)  /* lcd_data11.lcd_data11         */
++            0x0D0 (PIN_OUTPUT | MUX_MODE0)  /* lcd_data12.lcd_data12         */
++            0x0D4 (PIN_OUTPUT | MUX_MODE0)  /* lcd_data13.lcd_data13         */
++            0x0D8 (PIN_OUTPUT | MUX_MODE0)  /* lcd_data14.lcd_data14         */
++            0x0DC (PIN_OUTPUT | MUX_MODE0)  /* lcd_data15.lcd_data15         */
++            0x1E8 (PIN_OUTPUT | MUX_MODE7)  /* emu1.gpio3_8                  */
++            0x0E8 (PIN_OUTPUT | MUX_MODE0)  /* lcd_pclk.lcd_pclk             */
++            0x0EC (PIN_OUTPUT | MUX_MODE0)  /* lcd_ac_bias_en.lcd_ac_bias_en */
++        >;
++    }; /* lcd_pins_default */
++
++    lcd_pins_sleep: lcd_pins_sleep {
++        pinctrl-single,pins         = <
++            0x0A0 (PIN_INPUT_PULLDOWN | MUX_MODE7)  /* lcd_data0.lcd_data0           */
++            0x0A4 (PIN_INPUT_PULLDOWN | MUX_MODE7)  /* lcd_data1.lcd_data1           */
++            0x0A8 (PIN_INPUT_PULLDOWN | MUX_MODE7)  /* lcd_data2.lcd_data2           */
++            0x0AC (PIN_INPUT_PULLDOWN | MUX_MODE7)  /* lcd_data3.lcd_data3           */  
++            0x0B0 (PIN_INPUT_PULLDOWN | MUX_MODE7)  /* lcd_data4.lcd_data4           */
++            0x0B4 (PIN_INPUT_PULLDOWN | MUX_MODE7)  /* lcd_data5.lcd_data5           */
++            0x0B8 (PIN_INPUT_PULLDOWN | MUX_MODE7)  /* lcd_data6.lcd_data6           */
++            0x0BC (PIN_INPUT_PULLDOWN | MUX_MODE7)  /* lcd_data7.lcd_data7           */
++            0x0C0 (PIN_INPUT_PULLDOWN | MUX_MODE7)  /* lcd_data8.lcd_data8           */
++            0x0C4 (PIN_INPUT_PULLDOWN | MUX_MODE7)  /* lcd_data9.lcd_data9           */
++            0x0C8 (PIN_INPUT_PULLDOWN | MUX_MODE7)  /* lcd_data10.lcd_data10         */
++            0x0CC (PIN_INPUT_PULLDOWN | MUX_MODE7)  /* lcd_data11.lcd_data11         */
++            0x0D0 (PIN_INPUT_PULLDOWN | MUX_MODE7)  /* lcd_data12.lcd_data12         */
++            0x0D4 (PIN_INPUT_PULLDOWN | MUX_MODE7)  /* lcd_data13.lcd_data13         */
++            0x0D8 (PIN_INPUT_PULLDOWN | MUX_MODE7)  /* lcd_data14.lcd_data14         */
++            0x0DC (PIN_INPUT_PULLDOWN | MUX_MODE7)  /* lcd_data15.lcd_data15         */
++            0x1E8 (PIN_INPUT_PULLDOWN | MUX_MODE7)  /* emu1.gpio3_8                  */
++            0x0E8 (PIN_INPUT_PULLDOWN | MUX_MODE7)  /* lcd_pclk.lcd_pclk             */
++            0x0EC (PIN_INPUT_PULLDOWN | MUX_MODE7)  /* lcd_ac_bias_en.lcd_ac_bias_en */
++        >;
++    }; /* lcd_pins_sleep */
++}; /* am33xx_pinmux */
++
++&lcdc {     
++    pinctrl-names                   = "default", "sleep";
++    pinctrl-0                       = <&lcd_pins_default>;
++    pinctrl-1                       = <&lcd_pins_sleep>;
++    status                          = "okay";
++}; /* lcdc */
++
++&tscadc {
++    status                          = "okay";
++
++    tsc {
++        ti,wires                    = <4>;                   /* 4 wires */
++        ti,x-plate-resistance       = <200>;                 /* X plate resistance */
++        ti,coordinate-readouts      = <5>;                   /* 5 reads for X, 5 reads for Y, 2 reads for Z (always) */
++        ti,wire-config              = <0x00 0x11 0x22 0x33>;
++    }; /* tsc */
++
++    adc {
++        ti,adc-channels             = <4 5 6 7>;
++    }; /* adc */
++}; /* tscadc */
++
++&leds {
++    backlight {
++        label                       = "pengwyn::backlight";
++        gpios                       = <&gpio3 21 GPIO_ACTIVE_HIGH>;
++        linux,default-trigger       = "backlight";
++        default-state               = "on";
++    }; /* backlight */
++}; /* leds */
+

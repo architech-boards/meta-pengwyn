@@ -1,0 +1,151 @@
+diff -Naur a/drivers/mtd/nand/nand_ids.c b/drivers/mtd/nand/nand_ids.c
+--- a/drivers/mtd/nand/nand_ids.c	2014-05-02 17:16:28.269381079 +0200
++++ b/drivers/mtd/nand/nand_ids.c	2014-06-09 18:17:10.156621608 +0200
+@@ -110,6 +110,7 @@
+ 	{"NAND 1GiB 3,3V 8-bit",	0xD3, 0, 1024, 0, LP_OPTIONS},
+ 	{"NAND 1GiB 1,8V 16-bit",	0xB3, 0, 1024, 0, LP_OPTIONS16},
+ 	{"NAND 1GiB 3,3V 16-bit",	0xC3, 0, 1024, 0, LP_OPTIONS16},
++        {"NAND 1GiB 3,3V 8-bit",    0x38, 0, 1024, 0, LP_OPTIONS},
+ 
+ 	/* 16 Gigabit */
+ 	{"NAND 2GiB 1,8V 8-bit",	0xA5, 0, 2048, 0, LP_OPTIONS},
+diff -Naur a/drivers/usb/musb-new/musb_uboot.c b/drivers/usb/musb-new/musb_uboot.c
+--- a/drivers/usb/musb-new/musb_uboot.c	2014-05-02 17:16:34.373304343 +0200
++++ b/drivers/usb/musb-new/musb_uboot.c	2014-06-09 18:15:38.593772709 +0200
+@@ -116,7 +116,7 @@
+ {
+ 	u8 power;
+ 	void *mbase;
+-	int timeout = MUSB_HOST_TIMEOUT;
++	int timeout = 0x003fffff;
+ 
+ 	if (!host) {
+ 		printf("MUSB host is not registered\n");
+--- a/include/configs/pengwyn.h	2015-02-02 22:32:46.000000000 +0100
++++ b/include/configs/pengwyn.h	2015-02-10 09:36:05.355073200 +0100
+@@ -28,8 +28,8 @@
+ 
+ #ifndef CONFIG_SPL_BUILD
+ #define CONFIG_EXTRA_ENV_SETTINGS \
+-	"loadaddr=0x80200000\0" \
+-	"fdtaddr=0x80F80000\0" \
++	"loadaddr=0x80500000\0" \
++	"fdtaddr=0x80480000\0" \
+ 	"bootpart=0:2\0" \
+ 	"bootdir=/boot\0" \
+ 	"bootfile=zImage\0" \
+@@ -91,10 +91,22 @@
+ 		"rootfstype=${nandrootfstype}\0" \
+ 	"nandroot=ubi0:rootfs rw ubi.mtd=7,2048\0" \
+ 	"nandrootfstype=ubifs rootwait=1\0" \
++	"nandupdate=nand erase 0 1000000; " \
++		"mw 80000000 ffffffff 1000000; " \
++		"fatload mmc 0 80000000 mlo; " \
++		"fatload mmc 0 80080000 mlo; " \
++		"fatload mmc 0 80100000 mlo; " \
++		"fatload mmc 0 80180000 mlo; " \
++		"fatload mmc 0 80200000 u-boot.img; " \
++		"fatload mmc 0 ${fdtaddr} ${fdtfile}; " \
++		"fatload mmc 0 ${loadaddr} ${bootfile}; " \
++		"setenv nandimgsize $filesize; " \
++		"nand write 80000000 0 1000000; " \
++		"saveenv\0" \
+ 	"nandboot=echo Booting from nand ...; " \
+ 		"run nandargs; " \
+-		"nand read ${fdtaddr} u-boot-spl-os; " \
+-		"nand read ${loadaddr} kernel; " \
++		"nand read ${fdtaddr} 480000 80000; " \
++		"nand read ${loadaddr} 500000 800000; " \
+ 		"bootz ${loadaddr} - ${fdtaddr}\0"
+ #endif
+ 
+@@ -130,39 +130,50 @@
+ #define CONFIG_SYS_NAND_5_ADDR_CYCLE
+ #define CONFIG_SYS_NAND_PAGE_COUNT	(CONFIG_SYS_NAND_BLOCK_SIZE / \
+ 					 CONFIG_SYS_NAND_PAGE_SIZE)
+-#define CONFIG_SYS_NAND_PAGE_SIZE	2048
+-#define CONFIG_SYS_NAND_OOBSIZE		64
+-#define CONFIG_SYS_NAND_BLOCK_SIZE	(128*1024)
++#define CONFIG_SYS_NAND_PAGE_SIZE	4096
++#define CONFIG_SYS_NAND_OOBSIZE		224
++#define CONFIG_SYS_NAND_BLOCK_SIZE	(128*4096)
+ #define CONFIG_SYS_NAND_BAD_BLOCK_POS	NAND_LARGE_BADBLOCK_POS
+-#define CONFIG_SYS_NAND_ECCPOS		{ 2, 3, 4, 5, 6, 7, 8, 9, \
+-					 10, 11, 12, 13, 14, 15, 16, 17, \
+-					 18, 19, 20, 21, 22, 23, 24, 25, \
+-					 26, 27, 28, 29, 30, 31, 32, 33, \
+-					 34, 35, 36, 37, 38, 39, 40, 41, \
+-					 42, 43, 44, 45, 46, 47, 48, 49, \
+-					 50, 51, 52, 53, 54, 55, 56, 57, }
++#define CONFIG_SYS_NAND_ECCPOS          {  2,   3,   4,   5,   6,   7,   8,   9,  10,  11,  12,  13,  14,  15,  16,  17,\
++                                          18,  19,  20,  21,  22,  23,  24,  25,  26,  27,  28,  29,  30,  31,  32,  33,\
++                                          34,  35,  36,  37,  38,  39,  40,  41,  42,  43,  44,  45,  46,  47,  48,  49,\
++                                          50,  51,  52,  53,  54,  55,  56,  57,  58,  59,  60,  61,  62,  63,  64,  65,\
++                                          66,  67,  68,  69,  70,  71,  72,  73,  74,  75,  76,  77,  78,  79,  80,  81,\
++                                          82,  83,  84,  85,  86,  87,  88,  89,  90,  91,  92,  93,  94,  95,  96,  97,\
++                                          98,  99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113,\
++                                         114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129,\
++                                         130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145,\
++                                         146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161,\
++                                         162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177,\
++                                         178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193,\
++                                         194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209}
+ 
+ #define CONFIG_SYS_NAND_ECCSIZE		512
+-#define CONFIG_SYS_NAND_ECCBYTES	14
++#define CONFIG_SYS_NAND_ECCBYTES	26
+ #define CONFIG_SYS_NAND_ONFI_DETECTION
+-#define CONFIG_NAND_OMAP_ECCSCHEME	OMAP_ECC_BCH8_CODE_HW
++#define CONFIG_NAND_OMAP_ECCSCHEME	OMAP_ECC_BCH16_CODE_HW
+ #define CONFIG_SYS_NAND_U_BOOT_START	CONFIG_SYS_TEXT_BASE
+-#define CONFIG_SYS_NAND_U_BOOT_OFFS	0x80000
++#define CONFIG_SYS_NAND_U_BOOT_OFFS	0x200000
+ 
+ #define MTDIDS_DEFAULT			"nand0=omap2-nand.0"
+-#define MTDPARTS_DEFAULT		"mtdparts=omap2-nand.0:128k(SPL)," \
+-					"128k(SPL.backup1)," \
+-					"128k(SPL.backup2)," \
+-					"128k(SPL.backup3),1792k(u-boot)," \
+-					"128k(u-boot-spl-os)," \
+-					"128k(u-boot-env),5m(kernel),-(rootfs)"
++#define MTDPARTS_DEFAULT		"mtdparts=omap2-nand.0:," \
++					"512k(SPL)," 			/* 0x0000_0000 */ \
++					"512k(SPL.backup1)," 		/* 0x0008_0000 */ \
++					"512k(SPL.backup2)," 		/* 0x0010_0000 */ \
++					"512k(SPL.backup3)," 		/* 0x0018_0000 */ \
++					"1536k(u-boot)," 		/* 0x0020_0000 */ \
++					"512k(u-boot-spl-os),"		/* 0x0038_0000 */ \
++					"512k(u-boot-env)," 		/* 0x0040_0000 */ \
++					"512k(devicetree)," 		/* 0x0048_0000 */ \
++					"12m(kernel)," 			/* 0x0050_0000 */ \
++					"-(rootfs)"			/* 0x0110_0000 */
+ #define CONFIG_ENV_IS_IN_NAND
+-#define CONFIG_ENV_OFFSET		0x260000 /* environment starts here */
+-#define CONFIG_SYS_ENV_SECT_SIZE	(128 << 10)	/* 128 KiB */
++#define CONFIG_ENV_OFFSET		0x400000 /* environment starts here */
++#define CONFIG_SYS_ENV_SECT_SIZE	(512 << 10)	/* 512 KiB */
+ /* NAND: SPL falcon mode configs */
+ #ifdef CONFIG_SPL_OS_BOOT
+-#define CONFIG_CMD_SPL_NAND_OFS		0x240000 /* un-assigned */
+-#define CONFIG_SYS_NAND_SPL_KERNEL_OFFS	0x280000
++#define CONFIG_CMD_SPL_NAND_OFS		0x380000 /* un-assigned */
++#define CONFIG_SYS_NAND_SPL_KERNEL_OFFS	0x500000
+ #define CONFIG_CMD_SPL_WRITE_SIZE	0x2000
+ #endif
+ 
+--- a/board/silica/pengwyn/board.c	2015-02-02 22:32:46.000000000 +0100
++++ b/board/silica/pengwyn/board.c	2015-02-11 16:13:09.154204895 +0100
+@@ -141,12 +141,6 @@
+ 	{
+ 		.slave_reg_ofs	= 0x208,
+ 		.sliver_reg_ofs	= 0xd80,
+-		.phy_addr	= 0,
+-		.phy_if		= PHY_INTERFACE_MODE_MII,
+-	},
+-	{
+-		.slave_reg_ofs	= 0x308,
+-		.sliver_reg_ofs	= 0xdc0,
+ 		.phy_addr	= 1,
+ 		.phy_if		= PHY_INTERFACE_MODE_MII,
+ 	},
+
