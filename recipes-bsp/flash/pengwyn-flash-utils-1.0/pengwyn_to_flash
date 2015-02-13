@@ -184,17 +184,6 @@ then
     nandwrite --pad /dev/mtd3 "${MLO}" > /dev/null
 fi
 
-if [ -n "${FDT}" ]
-then
-    echo " *** Flattened Device Tree ***"
-
-    echo "     Cleaning FDT NAND memory..."
-    flash_erase /dev/mtd4 0 0 > /dev/null
-
-    echo "     Writing FDT (${FDT}) to NAND..."
-    nandwrite --pad /dev/mtd4 "${FDT}" > /dev/null
-fi
-
 if [ -n "${UBOOT}" ]
 then
     echo " *** U-Boot ***"
@@ -212,7 +201,17 @@ then
 
     echo "     Cleaning U-Boot environment in NAND..."
     flash_erase /dev/mtd6 0 0 > /dev/null
+fi
+
+if [ -n "${FDT}" ]
+then
+    echo " *** Flattened Device Tree ***"
+
+    echo "     Cleaning FDT NAND memory..."
     flash_erase /dev/mtd7 0 0 > /dev/null
+
+    echo "     Writing FDT (${FDT}) to NAND..."
+    nandwrite --pad /dev/mtd7 "${FDT}" > /dev/null
 fi
 
 if [ -n "${KERNEL}" ]

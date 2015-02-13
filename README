@@ -7,10 +7,11 @@ use with OpenEmbedded and/or Yocto.
 This layer depends on:
 
 URI: git://git.openembedded.org/openembedded-core.git
-branch: dora
+branch: dizzy
 
 URI: git://git.openembedded.org/meta-openembedded.git
-branch: dora
+branch: dizzy
 
 URI: git://git.yoctoproject.org/meta-ti.git
-branch: dora
+branch: master
+
