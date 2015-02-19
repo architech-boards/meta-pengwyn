@@ -32,7 +32,8 @@ diff -Naur a/drivers/usb/musb-new/musb_uboot.c b/drivers/usb/musb-new/musb_uboot
 +	"loadaddr=0x80500000\0" \
 +	"fdtaddr=0x80480000\0" \
  	"bootpart=0:2\0" \
- 	"bootdir=/boot\0" \
+-	"bootdir=/boot\0" \
++	"bootdir= \0" \
  	"bootfile=zImage\0" \
 @@ -91,10 +91,22 @@
  		"rootfstype=${nandrootfstype}\0" \
